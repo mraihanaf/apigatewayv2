@@ -1,0 +1,70 @@
+2025-02-12 20:00:25,228 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-12 20:00:25,228 - [33mPress CTRL+C to quit[0m
+2025-02-12 20:00:25,229 -  * Restarting with stat
+2025-02-12 20:00:25,808 -  * Debugger is active!
+2025-02-12 20:00:25,825 -  * Debugger PIN: 108-708-712
+2025-02-12 20:00:33,259 - Error fetching data: Invalid URL 'None': No schema supplied. Perhaps you meant http://None?
+2025-02-12 20:00:33,324 - 127.0.0.1 - - [12/Feb/2025 20:00:33] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-02-12 20:00:33,699 - 127.0.0.1 - - [12/Feb/2025 20:00:33] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-02-12 20:00:33,746 - 127.0.0.1 - - [12/Feb/2025 20:00:33] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-02-12 20:00:33,809 - 127.0.0.1 - - [12/Feb/2025 20:00:33] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=mvc0Zd8QScuDofedF6oM HTTP/1.1" 200 -
+2025-02-12 20:00:34,646 - 127.0.0.1 - - [12/Feb/2025 20:00:34] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2025-02-12 20:01:52,166 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-12 20:01:52,166 - [33mPress CTRL+C to quit[0m
+2025-02-12 20:01:52,166 -  * Restarting with stat
+2025-02-12 20:01:52,802 -  * Debugger is active!
+2025-02-12 20:01:52,808 -  * Debugger PIN: 108-708-712
+2025-02-12 20:01:54,750 - Error fetching data: Invalid URL 'None': No schema supplied. Perhaps you meant http://None?
+2025-02-12 20:01:54,756 - 127.0.0.1 - - [12/Feb/2025 20:01:54] "GET / HTTP/1.1" 200 -
+2025-02-12 20:02:29,231 -  * Detected change in 'D:\\Project\\Python\\chat\\frontend\\app.py', reloading
+2025-02-12 20:02:29,341 -  * Restarting with stat
+2025-02-12 20:02:30,128 -  * Debugger is active!
+2025-02-12 20:02:30,136 -  * Debugger PIN: 108-708-712
+2025-02-12 20:02:33,969 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-12 20:02:33,969 - [33mPress CTRL+C to quit[0m
+2025-02-12 20:02:33,969 -  * Restarting with stat
+2025-02-12 20:02:34,564 -  * Debugger is active!
+2025-02-12 20:02:34,565 -  * Debugger PIN: 108-708-712
+2025-02-12 20:02:41,069 - Fetched data successfully from API Gateway
+2025-02-12 20:02:41,078 - 127.0.0.1 - - [12/Feb/2025 20:02:41] "GET / HTTP/1.1" 200 -
+2025-02-12 20:02:41,154 - 127.0.0.1 - - [12/Feb/2025 20:02:41] "[33mGET /Nonehandi.jpg HTTP/1.1[0m" 404 -
+2025-02-12 20:07:13,911 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-12 20:07:13,911 - [33mPress CTRL+C to quit[0m
+2025-02-12 20:07:13,912 -  * Restarting with stat
+2025-02-12 20:07:14,532 -  * Debugger is active!
+2025-02-12 20:07:14,539 -  * Debugger PIN: 108-708-712
+2025-02-12 20:07:17,838 - Fetched data successfully from API Gateway
+2025-02-12 20:07:17,845 - 127.0.0.1 - - [12/Feb/2025 20:07:17] "GET / HTTP/1.1" 200 -
+2025-02-12 20:07:17,886 - 127.0.0.1 - - [12/Feb/2025 20:07:17] "[33mGET /Nonehandi.jpg HTTP/1.1[0m" 404 -
+2025-02-12 20:07:59,963 - Fetched data successfully from API Gateway
+2025-02-12 20:07:59,969 - 127.0.0.1 - - [12/Feb/2025 20:07:59] "GET / HTTP/1.1" 200 -
+2025-02-12 20:08:00,032 - 127.0.0.1 - - [12/Feb/2025 20:08:00] "[33mGET /Nonehandi.jpg HTTP/1.1[0m" 404 -
+2025-02-12 20:09:01,700 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-12 20:09:01,701 - [33mPress CTRL+C to quit[0m
+2025-02-12 20:09:01,701 -  * Restarting with stat
+2025-02-12 20:09:02,329 -  * Debugger is active!
+2025-02-12 20:09:02,336 -  * Debugger PIN: 108-708-712
+2025-02-12 20:09:13,864 - Fetched data successfully from API Gateway
+2025-02-12 20:09:13,882 - 127.0.0.1 - - [12/Feb/2025 20:09:13] "GET / HTTP/1.1" 200 -
+2025-02-12 20:09:14,017 - 127.0.0.1 - - [12/Feb/2025 20:09:14] "[33mGET /Nonehandi.jpg HTTP/1.1[0m" 404 -
+2025-02-12 20:10:50,695 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-12 20:10:50,696 - [33mPress CTRL+C to quit[0m
+2025-02-12 20:10:50,697 -  * Restarting with stat
+2025-02-12 20:10:51,389 -  * Debugger is active!
+2025-02-12 20:10:51,396 -  * Debugger PIN: 108-708-712
+2025-02-12 20:10:58,980 - Fetched data successfully from API Gateway
+2025-02-12 20:10:58,992 - 127.0.0.1 - - [12/Feb/2025 20:10:58] "GET / HTTP/1.1" 200 -
+2025-02-12 20:10:59,058 - 127.0.0.1 - - [12/Feb/2025 20:10:59] "[33mGET /Nonehandi.jpg HTTP/1.1[0m" 404 -
+2025-02-12 20:11:45,830 - 127.0.0.1 - - [12/Feb/2025 20:11:45] "[33mPOST /users HTTP/1.1[0m" 404 -
+2025-02-12 20:13:13,072 -  * Detected change in 'D:\\Project\\Python\\chat\\frontend\\app.py', reloading
+2025-02-12 20:13:13,192 -  * Restarting with stat
+2025-02-12 20:13:50,761 -  * Restarting with stat
+2025-02-12 20:14:01,741 -  * Restarting with stat
+2025-02-12 20:15:30,565 -  * Restarting with stat
+2025-02-12 20:15:59,779 -  * Restarting with stat

@@ -12,3 +12,6 @@
 `EFS_PATH=mnt/efs/log/app.log`<br/>
 `S3_BUCKET_NAME=your bucket name`<br/>
 `API_GATEWAY_URL=your API Gateway URL`<br/>
+
+# Running Apps
+`python app.py`

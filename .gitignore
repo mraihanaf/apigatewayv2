@@ -1,5 +1,3 @@
 .qodo
 LICENSE
-
-.gitignore
-frontend/*
+.env

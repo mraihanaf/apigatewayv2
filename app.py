@@ -14,7 +14,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_SESSION_TOKEN = os.getenv("AWS_SESSION_TOKEN")
 AWS_REGION = os.getenv("AWS_REGION")
 S3_BUCKET = os.getenv("S3_BUCKET_NAME")
-API_URL = "https://jfqaek93dg.execute-api.us-west-2.amazonaws.com/prod/users"
+API_URL = os.getenv("API_GATEWAY_URL")
 
 s3_client = boto3.client(
     "s3",

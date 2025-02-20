@@ -43,11 +43,11 @@ jobs:
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
         env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 
   build-and-push:
     needs: login-ecr
@@ -57,157 +57,91 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Login to Amazon ECR
-        id: login
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
         env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}  
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 
       - name: Build Docker image
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA          
         env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 
-      - name: Debug Variables ECR
-        run: |
-            echo "ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}"
-            echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}"
-
-      - name: Debug Environment Variables
-        run: |
-            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
-            echo "AWS_SESSION_TOKEN=${{ secrets.AWS_SESSION_TOKEN }}"
-            echo "AWS_REGION=${{ secrets.AWS_REGION }}"
-            echo "ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}"
-            echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}"
       - name: Push Docker image to ECR
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA
         env:
-            AWS_REGION: ${{ secrets.AWS_REGION }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+
+  deploy-ecs:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update ECS Task Definition
+        run: |
+          TASK_FAMILY=${{ secrets.ECS_TASK_FAMILY }}
+          CONTAINER_NAME=${{ secrets.ECS_CONTAINER_NAME }}
+          NEW_IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
+
+          # Ambil task definition yang ada dan perbarui dengan image baru
+          aws ecs describe-task-definition --task-definition $TASK_FAMILY --query taskDefinition > task-def.json
+          
+          # Buat revisi baru dari Task Definition
+          jq --arg IMAGE "$NEW_IMAGE" '.containerDefinitions[0].image = $IMAGE' task-def.json > new-task-def.json
+          
+          # Register Task Definition yang diperbarui
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json --query taskDefinition.taskDefinitionArn --output text)
+
+          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
+        env:
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}  
             ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
             ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
-    #   - name: Push Docker image to ECR
-    #     run: |
-    #       docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-    #       docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA
-    #     env:
-    #         AWS_REGION: ${{ secrets.AWS_REGION }}
-    #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}   
-    #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #         AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-    #         ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-    #         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      - name: Update ECS Service
+        run: |
+          aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER }} --service ${{ secrets.ECS_SERVICE }} --task-definition $NEW_TASK_DEF_ARN
+        env:
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}  
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
-#   create-ecs:
-#     needs: build-and-push
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-#           aws-region: ${{ secrets.AWS_REGION }}
-
-#       - name: Create ECS Cluster (if not exists)
-#         run: |
-#           CLUSTER_NAME=${{ secrets.ECS_CLUSTER }}
-#           EXISTS=$(aws ecs describe-clusters --clusters $CLUSTER_NAME --query "clusters[0].status" --output text 2>/dev/null || echo "MISSING")
-#           if [ "$EXISTS" == "MISSING" ]; then
-#             echo "Creating ECS Cluster..."
-#             aws ecs create-cluster --cluster-name $CLUSTER_NAME
-#           else
-#             echo "ECS Cluster $CLUSTER_NAME already exists."
-#           fi
-#         env:
-#           AWS_REGION: ${{ secrets.AWS_REGION }}
-
-#       - name: Create ECS Task Definition (if not exists)
-#         run: |
-#           TASK_DEFINITION_NAME=${{ secrets.ECS_TASK_DEFINITION }}
-#           CONTAINER_NAME="app-container"
-#           ECR_IMAGE="${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest"
-
-#           TASK_EXISTS=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION_NAME --query "taskDefinition.taskDefinitionArn" --output text 2>/dev/null || echo "MISSING")
-#           if [ "$TASK_EXISTS" == "MISSING" ]; then
-#             echo "Creating ECS Task Definition..."
-#             aws ecs register-task-definition \
-#               --family $TASK_DEFINITION_NAME \
-#               --network-mode awsvpc \
-#               --requires-compatibilities FARGATE \
-#               --cpu "256" \
-#               --memory "512" \
-#               --execution-role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole \
-#               --container-definitions "[{\"name\":\"$CONTAINER_NAME\",\"image\":\"$ECR_IMAGE\",\"memory\":512,\"cpu\":256,\"essential\":true,\"portMappings\":[{\"containerPort\":80,\"hostPort\":80}]}]"
-#           else
-#             echo "ECS Task Definition $TASK_DEFINITION_NAME already exists."
-#           fi
-#         env:
-#           AWS_REGION: ${{ secrets.AWS_REGION }}
-
-#       - name: Create ECS Service (if not exists)
-#         run: |
-#           SERVICE_NAME=${{ secrets.ECS_SERVICE }}
-#           CLUSTER_NAME=${{ secrets.ECS_CLUSTER }}
-#           TASK_DEFINITION_NAME=${{ secrets.ECS_TASK_DEFINITION }}
-#           SUBNET_1=${{ secrets.AWS_SUBNET_1 }}
-#           SUBNET_2=${{ secrets.AWS_SUBNET_2 }}
-#           SECURITY_GROUP=${{ secrets.AWS_SECURITY_GROUP }}
-
-#           SERVICE_EXISTS=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME --query "services[0].status" --output text 2>/dev/null || echo "MISSING")
-#           if [ "$SERVICE_EXISTS" == "MISSING" ]; then
-#             echo "Creating ECS Service..."
-#             aws ecs create-service \
-#               --cluster $CLUSTER_NAME \
-#               --service-name $SERVICE_NAME \
-#               --task-definition $TASK_DEFINITION_NAME \
-#               --desired-count 1 \
-#               --launch-type FARGATE \
-#               --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_1,$SUBNET_2],securityGroups=[$SECURITY_GROUP],assignPublicIp=\"ENABLED\"}"
-#           else
-#             echo "ECS Service $SERVICE_NAME already exists."
-#           fi
-#         env:
-#           AWS_REGION: ${{ secrets.AWS_REGION }}
-
-#   deploy:
-#     needs: create-ecs
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v2
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-#           aws-region: ${{ secrets.AWS_REGION }}
-
-#       - name: Update ECS Service to use new image
-#         run: |
-#           CLUSTER_NAME=${{ secrets.ECS_CLUSTER }}
-#           SERVICE_NAME=${{ secrets.ECS_SERVICE }}
-#           TASK_DEFINITION_NAME=${{ secrets.ECS_TASK_DEFINITION }}
-
-#           echo "Updating ECS service with new task definition..."
-#           aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
-#         env:
-#           AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Force New Deployment
+        run: |
+          aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER }} --service ${{ secrets.ECS_SERVICE }} --force-new-deployment
+        env:
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}  
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}

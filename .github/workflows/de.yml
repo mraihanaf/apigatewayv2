@@ -178,6 +178,25 @@ jobs:
             EB_APPLICATION_NAME: ${{ secrets.EB_APPLICATION_NAME }}
             S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
 
+      
+      - name: Wait for Elastic Beanstalk to be ready
+        run: |
+            while true; do
+                STATUS=$(aws elasticbeanstalk describe-environments --environment-names $EB_ENV_NAME --query 'Environments[*].Status' --output text --region $AWS_REGION)
+                echo "Current status: $STATUS"
+                if [ "$STATUS" == "Ready" ]; then
+                    break
+                fi
+                echo "Waiting for environment to be ready..."
+                sleep 30
+            done
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+      
       - name: Deploy New Application Version
         run: |
             aws elasticbeanstalk update-environment \

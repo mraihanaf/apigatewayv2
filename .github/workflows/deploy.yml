@@ -119,6 +119,12 @@ jobs:
             aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
             aws-region: ${{ secrets.AWS_REGION }}
         
+        - name: Debug ECS Variables
+          run: |
+              echo "ECS_CLUSTER=${{ secrets.ECS_CLUSTER }}"
+              echo "ECS_SERVICE=${{ secrets.ECS_SERVICE }}"
+              echo "ECS_TASK_DEFINITION=${{ secrets.ECS_TASK_DEFINITION }}"
+        
         - name: Register new Task Definition
           id: register-task
           run: |

@@ -104,61 +104,61 @@ jobs:
             ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
             ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
-  deploy:
-      needs: build-and-push
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
+#   deploy:
+#       needs: build-and-push
+#       runs-on: ubuntu-latest
+#       steps:
+#         - name: Checkout code
+#           uses: actions/checkout@v3
 
-        - name: Configure AWS Credentials
-          uses: aws-actions/configure-aws-credentials@v2
-          with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-            aws-region: ${{ secrets.AWS_REGION }}
+#         - name: Configure AWS Credentials
+#           uses: aws-actions/configure-aws-credentials@v2
+#           with:
+#             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#             aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+#             aws-region: ${{ secrets.AWS_REGION }}
         
-        - name: Debug ECS Variables
-          run: |
-              echo "ECS_CLUSTER=${{ secrets.ECS_CLUSTER }}"
-              echo "ECS_SERVICE=${{ secrets.ECS_SERVICE }}"
-              echo "ECS_TASK_DEFINITION=${{ secrets.ECS_TASK_DEFINITION }}"
+#         - name: Debug ECS Variables
+#           run: |
+#               echo "ECS_CLUSTER=${{ secrets.ECS_CLUSTER }}"
+#               echo "ECS_SERVICE=${{ secrets.ECS_SERVICE }}"
+#               echo "ECS_TASK_DEFINITION=${{ secrets.ECS_TASK_DEFINITION }}"
         
-        - name: Register new Task Definition
-          id: register-task
-          run: |
-            TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION)
-            NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
-            '.taskDefinition | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | 
-            .containerDefinitions[0].image = $IMAGE')
+#         - name: Register new Task Definition
+#           id: register-task
+#           run: |
+#             TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION)
+#             NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
+#             '.taskDefinition | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | 
+#             .containerDefinitions[0].image = $IMAGE')
 
-            echo "$NEW_TASK_DEF" > new-task-def.json
-            aws ecs register-task-definition --cli-input-json file://new-task-def.json
+#             echo "$NEW_TASK_DEF" > new-task-def.json
+#             aws ecs register-task-definition --cli-input-json file://new-task-def.json
 
     
-          env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-            ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-            ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
+#           env:
+#             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#             AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+#             AWS_REGION: ${{ secrets.AWS_REGION }}
+#             ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+#             ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+#             ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
 
-        - name: Debug ECS Variables
-          run: |
-              echo "ECS_CLUSTER=${{ secrets.ECS_CLUSTER }}"
-              echo "ECS_SERVICE=${{ secrets.ECS_SERVICE }}"
-              echo "ECS_TASK_DEFINITION=${{ secrets.ECS_TASK_DEFINITION }}"
-        - name: Update ECS Service
-          run: |
-            aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --task-definition "$ECS_TASK_DEFINITION"
-          env:
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-            ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
-            ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
-            ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
+#         - name: Debug ECS Variables
+#           run: |
+#               echo "ECS_CLUSTER=${{ secrets.ECS_CLUSTER }}"
+#               echo "ECS_SERVICE=${{ secrets.ECS_SERVICE }}"
+#               echo "ECS_TASK_DEFINITION=${{ secrets.ECS_TASK_DEFINITION }}"
+#         - name: Update ECS Service
+#           run: |
+#             aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --task-definition "$ECS_TASK_DEFINITION"
+#           env:
+#             AWS_REGION: ${{ secrets.AWS_REGION }}
+#             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#             AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+#             ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+#             ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+#             ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}

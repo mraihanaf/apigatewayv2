@@ -167,7 +167,7 @@ jobs:
         run: |
             aws elasticbeanstalk create-application-version \
             --application-name $EB_APPLICATION_NAME \
-            --version-label "deploy-${GITHUB_RUN_NUMBER}" \
+            --version-label "redeploy-${GITHUB_RUN_NUMBER}" \
             --source-bundle S3Bucket=$S3_BUCKET_NAME,S3Key=Dockerrun.aws.json \
             --region $AWS_REGION
         env:
@@ -202,7 +202,7 @@ jobs:
             aws elasticbeanstalk update-environment \
             --application-name $EB_APPLICATION_NAME \
             --environment-name $EB_ENV_NAME \
-            --version-label "deploy-${GITHUB_RUN_NUMBER}" \
+            --version-label "redeploy-${GITHUB_RUN_NUMBER}" \
             --region $AWS_REGION
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

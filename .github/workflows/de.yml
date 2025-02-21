@@ -100,6 +100,12 @@ jobs:
         env:
           ECR_IMAGE: ${{ env.ECR_IMAGE }}
 
+      - name: Check Region
+        run: | 
+            echo "AWS_REGION: $AWS_REGION"
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
       - name: Upload Dockerrun.aws.json to S3
         run: |
           aws s3 cp s3://$S3_BUCKET_NAME/Dockerrun.aws.json ./Dockerrun.aws.json --region $AWS_REGION

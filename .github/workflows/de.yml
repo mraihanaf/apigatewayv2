@@ -181,9 +181,21 @@ jobs:
       
       - name: Wait for Elastic Beanstalk environment to be ready
         run: |
-            aws elasticbeanstalk wait environment-ready \
-            --environment-name $EB_ENV_NAME \
-            --region $AWS_REGION
+            STATUS="Unknown"
+            while [ "$STATUS" != "Ready" ]; do
+                STATUS=$(aws elasticbeanstalk describe-environments 
+                --environment-names $EB_ENV_NAME \ 
+                --region $AWS_REGION \
+                --query "Environments[*].Status" \
+                --output text)
+                echo "Environment Status: $STATUS"
+                if [ "$STATUS" != "Terminated" ]; then
+                    echo "Environment has been terminated. Exiting..."
+                    exit 1
+                fi
+                sleep 30
+            done
+            echo "Environment is ready"
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -191,18 +203,18 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
             EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
 
-      - name: Deploy new Application Version to Elastic Beanstalk
-        run: |
-            aws elasticbeanstalk update-environment \
-            --environment-name $EB_ENV_NAME \
-            --version-label "deploy-${GITHUB_RUN_NUMBER}" \
-            --region $AWS_REGION
-        env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-            EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+    #   - name: Deploy new Application Version to Elastic Beanstalk
+    #     run: |
+    #         aws elasticbeanstalk update-environment \
+    #         --environment-name $EB_ENV_NAME \
+    #         --version-label "deploy-${GITHUB_RUN_NUMBER}" \
+    #         --region $AWS_REGION
+    #     env:
+    #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #         AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+    #         AWS_REGION: ${{ secrets.AWS_REGION }}
+    #         EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
 
     #   - name: Deploy to Elastic Beanstalk
     #     run: |

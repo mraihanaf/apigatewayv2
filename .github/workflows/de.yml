@@ -129,18 +129,18 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
 
-      - name: Deploy to Elastic Beanstalk
-        run: |
-          aws elasticbeanstalk create-application-version \
-            --application-name $EB_APPLICATION_NAME \
-            --version-label "v-${{ github.run_number }}" \
-            --source-bundle S3Bucket=$S3_BUCKET_NAME,S3Key=Dockerrun.aws.json
+    #   - name: Deploy to Elastic Beanstalk
+    #     run: |
+    #       aws elasticbeanstalk create-application-version \
+    #         --application-name $EB_APPLICATION_NAME \
+    #         --version-label "v-${{ github.run_number }}" \
+    #         --source-bundle S3Bucket=$S3_BUCKET_NAME,S3Key=Dockerrun.aws.json
 
-          aws elasticbeanstalk update-environment \
-            --environment-name $EB_ENV_NAME \
-            --version-label "v-${{ github.run_number }}"
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          EB_APPLICATION_NAME: ${{ secrets.EB_APPLICATION_NAME }}
-          EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+    #       aws elasticbeanstalk update-environment \
+    #         --environment-name $EB_ENV_NAME \
+    #         --version-label "v-${{ github.run_number }}"
+    #     env:
+    #       AWS_REGION: ${{ secrets.AWS_REGION }}
+    #       EB_APPLICATION_NAME: ${{ secrets.EB_APPLICATION_NAME }}
+    #       EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+    #       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}

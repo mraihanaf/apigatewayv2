@@ -88,7 +88,7 @@ jobs:
           echo '{
             "AWSEBDockerrunVersion": "1",
             "Image": {
-              "Name": "'$ECR_IMAGE'",
+              "Name": "'$ECR_REGISTRY'",
               "Update": "true"
             },
             "Ports": [
@@ -98,7 +98,7 @@ jobs:
             ]
           }' > Dockerrun.aws.json
         env:
-          ECR_IMAGE: ${{ env.ECR_IMAGE }}
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 
       - name: Check Region
         run: | 

@@ -162,6 +162,26 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
             AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
             EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+            aws elasticbeanstalk update-environment \
+            --environment-name $EB_ENV_NAME \
+            --version-label "deploy-${{ github.run_number }}" \
+            --region $AWS_REGION \
+            --application-name $EB_APPLICATION_NAME \
+            --s3-bucket $S3_BUCKET_NAME \
+            --s3-key Dockerrun.aws.json
+  
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+            EB_APPLICATION_NAME: ${{ secrets.EB_APPLICATION_NAME }}
+            S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
     #   - name: Deploy to Elastic Beanstalk
     #     run: |
     #         aws elasticbeanstalk create-application-version \

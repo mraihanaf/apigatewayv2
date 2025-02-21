@@ -102,7 +102,20 @@ jobs:
 
       - name: Upload Dockerrun.aws.json to S3
         run: |
-          aws s3 cp Dockerrun.aws.json s3://$S3_BUCKET_NAME/Dockerrun.aws.json
+          aws s3 cp Dockerrun.aws.json s3://$S3_BUCKET_NAME/Dockerrun.aws.json --region $AWS_REGION
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
+      - name: Debug Uploaded Dockerrun.aws.json to S3
+        run: |
+          echo "Uploading Dockerrun.aws.json to S3 Bucket: $S3_BUCKET_NAME"
+          aws s3 cp s3://$S3_BUCKET_NAME/Dockerrun.aws.json --region $AWS_REGION
+          echo "Verifying Dockerrun.aws.json file in S3 Bucket: $S3_BUCKET_NAME"
+          aws s3 ls s3://$S3_BUCKET_NAME/Dockerrun.aws.json --region $AWS_REGION
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

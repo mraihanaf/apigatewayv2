@@ -159,8 +159,7 @@ jobs:
             EB_APP_NAME: ${{ secrets.EB_APPLICATION_NAME }}
       - name: Get retrive Elastic Beanstalk Logs
         run: |
-            aws elasticbeanstalk request-environment-info --environment-name $EB_ENV_NAME --info-type tail --region $AWS_REGION
-            # aws elasticbeanstalk tail-logs --environment-name ${{ secrets.EB_ENV_NAME }} --region $AWS_REGION
+            aws elasticbeanstalk request-environment-info --environment-name $EB_ENV_NAME --info-type tail --region $AWS_REGION            
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

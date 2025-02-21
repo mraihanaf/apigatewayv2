@@ -1,3 +1,4 @@
 .qodo
 LICENSE
 .env
+.env.*

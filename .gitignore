@@ -4,3 +4,4 @@ LICENSE
 .env.*
 
 .github/workflows/deploy.yml_
+.github/workflows/de.yml_

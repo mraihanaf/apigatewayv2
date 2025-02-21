@@ -61,6 +61,19 @@ jobs:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
+      - name: Debug Docker Image
+        run: |
+            echo "Docker Image: $ECR_REGISTRY/$ECR_REPOSITORY:latest"0
+            docker images
+            docker run --rm $ECR_REGISTRY/$ECR_REPOSITORY:latest echo "Docker image is working"
+        env:
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+                        
       - name: Save ECR Image URL
         id: ecr-image
         run: echo "ECR_IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >> $GITHUB_ENV
@@ -100,9 +113,9 @@ jobs:
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 
-      - name: Check Region
+      - name: Debug Dockerrun.aws.json
         run: | 
-            echo "AWS_REGION: $AWS_REGION"
+            cat Dockerrun.aws.json
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 

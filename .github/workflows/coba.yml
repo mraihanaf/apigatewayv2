@@ -1,70 +1,74 @@
-name: Deploy to Elastic Beanstalk
+name: Belajar CI/CD Python
 
 on:
   push:
     branches:
-      - main  # Ganti dengan branch yang ingin Anda gunakan untuk deployment
+      - main
 
 jobs:
-  deploy:
+  install:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          python-version: 3.13
 
-      - name: Login to Amazon ECR
-        id: ecr-login
+      - name: Install dependencies
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Pull Docker Image from ECR
+  build-and-push:
+    needs: install
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Zip application for deployment
+        run: zip -r application.zip . -x '*.git*'
+
+      - name: Upload to S3
         run: |
-          docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
+          aws s3 cp application.zip s3://$S3_BUCKET_NAME/$S3_KEY
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          S3_KEY: "deployments/application-${{ github.sha }}.zip"
 
-      - name: Save Docker Image to Tar File
-        run: |
-          docker save ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest -o image.tar
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
-      - name: Upload Docker Image to S3
-        run: |
-          aws s3 cp image.tar s3://${{ secrets.S3_BUCKET_NAME }}/image.tar
-
-      - name: Create Dockerrun.aws.json
-        run: |
-          echo '{
-            "AWSEBDockerrunVersion": "1",
-            "Image": {
-              "Name": "${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest",
-              "Update": "true"
-            },
-            "Ports": [
-              {
-                "ContainerPort": "5000",
-                "HostPort": "80"
-              }
-            ]
-          }' > Dockerrun.aws.json
-
-      - name: Upload Dockerrun.aws.json to S3
-        run: |
-          aws s3 cp Dockerrun.aws.json s3://${{ secrets.S3_BUCKET_NAME }}/Dockerrun.aws.json
-
+    steps:
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
             --application-name ${{ secrets.EB_APPLICATION_NAME }} \
-            --version-label v-${{ github.run_number }} \
-            --source-bundle S3Bucket=${{ secrets.S3_BUCKET_NAME }},S3Key=Dockerrun.aws.json
+            --version-label $GITHUB_SHA \
+            --source-bundle S3Bucket=$S3_BUCKET_NAME,S3Key=$S3_KEY \
+            --region $AWS_REGION
 
           aws elasticbeanstalk update-environment \
             --environment-name ${{ secrets.EB_ENV_NAME }} \
-            --version-label v-${{ github.run_number }}
+            --version-label $GITHUB_SHA
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          S3_KEY: "deployments/application-${{ github.sha }}.zip"
+
+          EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+          EB_APP_NAME: ${{ secrets.EB_APPLICATION_NAME }}

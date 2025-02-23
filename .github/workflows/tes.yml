@@ -82,9 +82,19 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Delete existing application version if exists
+        run: |
+          aws elasticbeanstalk delete-application-version --application-name ${{ secrets.EB_APP_NAME }} --version-label $GITHUB_SHA --delete-source-bundle
+        
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          EB_APP_NAME: ${{ secrets.EB_APP_NAME }}
       - name: Deploy to Elastic Beanstalk
         run: |
-          aws elasticbeanstalk create-application-version --application-name ${{ secrets.EB_APP_NAME }} --version-label $GITHUB_SHA --source-bundle "{\"S3Bucket\": \"${{ secrets.S3_BUCKET_NAME }}\", \"S3Key\": \"flask-app.zip\"}" --process
+          aws elasticbeanstalk create-application-version --application-name ${{ secrets.EB_APP_NAME }} --version-label "${GITHUB_SHA}-${{ github.run_number }} --source-bundle "{\"S3Bucket\": \"${{ secrets.S3_BUCKET_NAME }}\", \"S3Key\": \"flask-app.zip\"}" --process
           aws elasticbeanstalk update-environment --environment-name ${{ secrets.EB_ENV_NAME }} --version-label $GITHUB_SHA
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

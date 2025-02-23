@@ -63,7 +63,7 @@ jobs:
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version --application-name ${{ secrets.EB_APP_NAME }} --version-label $GITHUB_SHA --source-bundle "{\"S3Bucket\": \"${{ secrets.S3_BUCKET_NAME }}\", \"S3Key\": \"flask-app.zip\"}" --process
-          aws elasticbeanstalk update-environment --environment-name ${{ secrets.EB_ENV_NAME }} --version-label $GITHUB_SHA --option-settings Namespace=aws:elasticbeanstalk:container:docker,OptionName=ImageUrl,Value=${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:$GITHUB_SHA
+          aws elasticbeanstalk update-environment --environment-name ${{ secrets.EB_ENV_NAME }} --version-label $GITHUB_SHA
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

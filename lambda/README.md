@@ -1,5 +1,5 @@
 # Lambda
 
 
-# Install Dependencies
-You need install dependencies pymysql
+# Dependencies
+You need dependencies pymysql

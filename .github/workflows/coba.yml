@@ -1,5 +1,4 @@
-name: Belajar CI/CD Python
-
+name: CI/CD Pipeline
 on:
   push:
     branches:
@@ -23,52 +22,64 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-  build-and-push:
-    needs: install
+  build:
+    needs: install  # Build hanya berjalan jika install selesai sukses
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Zip application for deployment
-        run: zip -r application.zip . -x '*.git*'
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
 
-      - name: Upload to S3
+      - name: Build Docker image
         run: |
-          aws s3 cp application.zip s3://$S3_BUCKET_NAME/$S3_KEY
+          docker build -t flask-app .
+
+      - name: Zip Docker Image
+        run: |
+          zip -r flask-app.zip .
+
+      - name: Check contents of ZIP file
+        run: |
+          ls -l flask-app.zip
+
+      - name: Upload ZIP to S3
+        run: |
+          aws s3 cp flask-app.zip s3://${{ secrets.S3_BUCKET_NAME }}/flask-app.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-          S3_KEY: "deployments/application-${{ github.sha }}.zip"
 
   deploy:
-    needs: build-and-push
+    needs: build  # Deploy hanya berjalan jika build selesai sukses
     runs-on: ubuntu-latest
 
     steps:
       - name: Deploy to Elastic Beanstalk
         run: |
-          aws elasticbeanstalk create-application-version \
-            --application-name ${{ secrets.EB_APPLICATION_NAME }} \
-            --version-label $GITHUB_SHA \
-            --source-bundle S3Bucket=$S3_BUCKET_NAME,S3Key=$S3_KEY \
-            --region $AWS_REGION
-
-          aws elasticbeanstalk update-environment \
-            --environment-name ${{ secrets.EB_ENV_NAME }} \
-            --version-label $GITHUB_SHA
+          aws elasticbeanstalk create-application-version --application-name ${{ secrets.EB_APP_NAME }} --version-label $GITHUB_SHA --source-bundle "{\"S3Bucket\": \"\", \"S3Key\": \"\"}" --process
+          aws elasticbeanstalk update-environment --environment-name ${{ secrets.EB_ENV_NAME }} --version-label $GITHUB_SHA --option-settings Namespace=aws:elasticbeanstalk:container:docker,OptionName=ImageUrl,Value=${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:$GITHUB_SHA
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-          
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-          S3_KEY: "deployments/application-${{ github.sha }}.zip"
-
+          EB_APP_NAME: ${{ secrets.EB_APP_NAME }}
           EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
-          EB_APPLICATION_NAME: ${{ secrets.EB_APPLICATION_NAME }}
+
+      - name: Check Elastic Beanstalk Health Status
+        run: |
+          echo "Checking the health of the Elastic Beanstalk environment..."
+          aws elasticbeanstalk describe-environment-health --environment-name ${{ secrets.EB_ENV_NAME }} --attribute HealthStatus --query "HealthStatus"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}

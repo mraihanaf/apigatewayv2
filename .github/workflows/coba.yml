@@ -71,4 +71,4 @@ jobs:
           S3_KEY: "deployments/application-${{ github.sha }}.zip"
 
           EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
-          EB_APP_NAME: ${{ secrets.EB_APPLICATION_NAME }}
+          EB_APPLICATION_NAME: ${{ secrets.EB_APPLICATION_NAME }}

@@ -104,7 +104,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          envsubst < apigatewayv2/deployment.yaml | kubectl apply -f -
+          envsubst < deployment.yaml | kubectl apply -f -
           
       - name: Verify Deployment
         run: kubectl get pods -l -w 1

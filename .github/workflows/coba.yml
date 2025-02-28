@@ -107,7 +107,7 @@ jobs:
           envsubst < deployment.yaml | kubectl apply -f -
           
       - name: Verify Deployment
-        run: kubectl get pods -l -w 1
+        run: kubectl get pods -w
         
   # deploy:
   #   needs: upload_to_s3

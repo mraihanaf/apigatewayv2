@@ -10,6 +10,9 @@ AWS_REGION=us-east-1<br/>
 EFS_PATH=yourpath/app.log<br/>
 S3_BUCKET_NAME=your bucket name<br/>
 API_GATEWAY_URL=your API Gateway URL<br/>
+ECR_REPOSITORY=your name ECR<br/>
+ECR_REGISTRY=your url image
+
 
 ## Running Apps
 python app.py

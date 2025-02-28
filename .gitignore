@@ -3,7 +3,17 @@ LICENSE
 .env
 .env.*
 
+app.py_
+
 .github/workflows/deploy.yml_
 .github/workflows/de.yml_
+.github/workflows/tes.yml
+.github/workflows/coba.yml
+.github/workflows/*
+
+Dockerfile
+Dockerrun.aws.json
+
+modul2.yaml
 
 LICENSE

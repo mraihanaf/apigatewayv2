@@ -71,43 +71,43 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-  
-      deploy_to_eks:
-        needs: upload_to_s3
-        runs-on: ubuntu-latest
 
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v3
+  deploy_to_eks:
+    needs: upload_to_s3
+    runs-on: ubuntu-latest
 
-          - name: Configure AWS credentials
-            uses: aws-actions/configure-aws-credentials@v4
-            with:
-              aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-              aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-              aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-              aws-region: ${{ secrets.AWS_REGION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-          - name: Install kubectl
-            run: |
-              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-              chmod +x kubectl
-              sudo mv kubectl /usr/local/bin/
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-          - name: Configure kubectl
-            run: |
-              aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }} --role-arn arn:aws:eks:us-east-1:352096126793:cluster/wonderful-hiphop-otter
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
 
-          - name: Deploy to EKS
-            env:
-              ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-              ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-              IMAGE_TAG: ${{ github.sha }}
-            run: |
-              envsubst < apigatewayv2/deployment.yaml | kubectl apply -f -
-              
-          - name: Verify Deployment
-            run: kubectl get pods
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }} --role-arn arn:aws:eks:us-east-1:352096126793:cluster/wonderful-hiphop-otter
+
+      - name: Deploy to EKS
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          envsubst < apigatewayv2/deployment.yaml | kubectl apply -f -
+          
+      - name: Verify Deployment
+        run: kubectl get pods -l -w 1
         
   # deploy:
   #   needs: upload_to_s3

@@ -4,6 +4,8 @@ LICENSE
 .env.*
 
 app.py_
+Dockerfile
+dockerfile
 
 .github/workflows/deploy.yml_
 .github/workflows/de.yml_

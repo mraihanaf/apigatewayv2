@@ -16,3 +16,6 @@ ECR_REGISTRY=your url image
 
 ## Running Apps
 python app.py
+
+# Problem Solving
+You must solve the problem in the CI/CD

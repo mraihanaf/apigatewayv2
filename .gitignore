@@ -4,14 +4,7 @@ LICENSE
 .env.*
 
 app.py_
-Dockerfile
-dockerfile
 
-.github/workflows/deploy.yml_
-.github/workflows/de.yml_
-.github/workflows/tes.yml
-.github/workflows/coba.yml
-.github/workflows/*
 
 Dockerrun.aws.json
 

@@ -1,14 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'LKS Jakarta Timur 2 - Ibrahim - Complete Infrastructure Template'
+Description: 'LKS Jakarta Timur 2 - raihan - Complete Infrastructure Template'
 
 Parameters:
   EnvironmentName:
     Description: An environment name that is prefixed to resource names
     Type: String
-    Default: lks-jaktim2-ibrahim
+    Default: lks-jakpus1-raihan
 
   VpcCIDR:
-    Description: This is the main CIDR of lks-jaktim2-ibrahim
+    Description: This is the main CIDR of lks-jakpus1-raihan
     Type: String
     Default: 20.2.0.0/16
 

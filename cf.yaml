@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'LKS Jakarta Timur 2 - raihan - Complete Infrastructure Template'
+Description: 'LKS Jakarta Pusat 1 - raihan - Complete Infrastructure Template'
 
 Parameters:
   EnvironmentName:
@@ -297,8 +297,8 @@ Resources:
           ToPort: 3306
           CidrIp: !Ref VpcCIDR
         - IpProtocol: tcp
-          FromPort: 5000
-          ToPort: 5000
+          FromPort: 80 # Allow Inbound Gunicorn prod server from Dockerfile's build
+          ToPort: 80
           CidrIp: !Ref VpcCIDR
       Tags:
         - Key: Name

@@ -122,10 +122,6 @@ jobs:
             }
           ]" > .ebenv.json
 
-          aws elasticbeanstalk update-environment \
-            --environment-name ${{ secrets.EB_ENV_NAME }} \
-            --option-settings file://.ebenv.json
-
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
@@ -135,6 +131,7 @@ jobs:
             --process
 
           aws elasticbeanstalk update-environment \
+            --option-settings file://.ebenv. \
             --environment-name ${{ secrets.EB_ENV_NAME }} \
             --version-label ${{ github.run_id }}
 

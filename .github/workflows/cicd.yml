@@ -87,6 +87,45 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Update Elastic Beanstalk Environment Configuration
+        run: |
+          echo "[
+            {
+              \"Namespace\": \"aws:elasticbeanstalk:application:environment\",
+              \"OptionName\": \"AWS_ACCESS_KEY_ID\",
+              \"Value\": \"${{ secrets.AWS_ACCESS_KEY_ID }}\"
+            },
+            {
+              \"Namespace\": \"aws:elasticbeanstalk:application:environment\",
+              \"OptionName\": \"AWS_SECRET_ACCESS_KEY\",
+              \"Value\": \"${{ secrets.AWS_SECRET_ACCESS_KEY }}\"
+            },
+            {
+              \"Namespace\": \"aws:elasticbeanstalk:application:environment\",
+              \"OptionName\": \"AWS_SESSION_TOKEN\",
+              \"Value\": \"${{ secrets.AWS_SESSION_TOKEN }}\"
+            },
+            {
+              \"Namespace\": \"aws:elasticbeanstalk:application:environment\",
+              \"OptionName\": \"AWS_REGION\",
+              \"Value\": \"${{ secrets.AWS_REGION }}\"
+            },
+            {
+              \"Namespace\": \"aws:elasticbeanstalk:application:environment\",
+              \"OptionName\": \"S3_BUCKET_NAME\",
+              \"Value\": \"${{ secrets.S3_BUCKET_NAME }}\"
+            },
+            {
+              \"Namespace\": \"aws:elasticbeanstalk:application:environment\",
+              \"OptionName\": \"API_GATEWAY_URL\",
+              \"Value\": \"${{ secrets.API_GATEWAY_URL }}\"
+            }
+          ]" > .ebenv.json
+
+          aws elasticbeanstalk update-environment \
+            --environment-name ${{ secrets.EB_ENV_NAME }} \
+            --option-settings file://.ebenv.json
+
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
@@ -97,7 +136,7 @@ jobs:
 
           aws elasticbeanstalk update-environment \
             --environment-name ${{ secrets.EB_ENV_NAME }} \
-            --version-label ${{ github.run_id}}
+            --version-label ${{ github.run_id }}
 
       - name: Check Elastic Beanstalk Health Status
         run: |

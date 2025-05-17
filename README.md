@@ -27,5 +27,3 @@ python app.py
 
 # Problem Solving
 You must solve the problem in the CI/CD
-
-aws s3 cp flask-app.zip s3://lks-jakpus1-rai-dockerimage-737713706142/flask-app.zip

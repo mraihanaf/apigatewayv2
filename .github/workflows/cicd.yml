@@ -131,7 +131,7 @@ jobs:
             --process
 
           aws elasticbeanstalk update-environment \
-            --option-settings file://.ebenv \
+            --option-settings file://.ebenv.json \
             --environment-name ${{ secrets.EB_ENV_NAME }} \
             --version-label ${{ github.run_id }}
 
